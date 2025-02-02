@@ -36,43 +36,121 @@ document.addEventListener("DOMContentLoaded", () => {
         quoteDisplay.innerHTML = `<p><strong>${randomQuote.category}:</strong> ${randomQuote.text}</p>`;
     }
 
+    // Filtrer les citations par catégorie
+    function filterQuotes() {
+        showRandomQuote();
+        localStorage.setItem("selectedCategory", categoryFilter.value);
+    }
+
     // Sauvegarder les citations dans localStorage
     function saveQuotes() {
         localStorage.setItem("quotes", JSON.stringify(quotes));
     }
 
-    // Fonction pour synchroniser les citations avec le serveur
-    async function syncQuotes() {
-        try {
-            const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-                method: 'GET', // Méthode GET pour récupérer les données
-            });
+    // Exporter les citations en JSON
+    function exportQuotes() {
+        const quotesJSON = JSON.stringify(quotes, null, 2);
+        const blob = new Blob([quotesJSON], { type: "application/json" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "quotes.json";
+        link.click();
+    }
 
-            if (!response.ok) {
-                throw new Error('Erreur lors de la récupération des citations');
-            }
+    // Importer les citations depuis un fichier JSON
+    function importFromJsonFile(event) {
+        const fileReader = new FileReader();
+        fileReader.onload = function(event) {
+            const importedQuotes = JSON.parse(event.target.result);
+            quotes.push(...importedQuotes);
+            saveQuotes();
+            alert('Quotes imported successfully!');
+        };
+        fileReader.readAsText(event.target.files[0]);
+    }
 
-            const serverQuotes = await response.json();
-            const latestQuote = serverQuotes[0]; // Simuler une seule citation venant du serveur
+    // Ajouter un formulaire pour ajouter une citation
+    function createAddQuoteForm() {
+        const formContainer = document.createElement("div");
 
-            // Vérification de conflit (par exemple, si le texte est différent)
-            const conflictingQuote = quotes.find(quote => quote.text !== latestQuote.title);
-            if (conflictingQuote) {
-                // Résolution automatique du conflit : on choisit la citation du serveur
-                quotes = quotes.filter(quote => quote.text !== conflictingQuote.text);
-                quotes.push({ text: latestQuote.title, category: "Inspiration" });
-                showSyncNotification("Les citations ont été mises à jour avec succès depuis le serveur !");
-            } else {
-                // Si pas de conflit, ajouter ou mettre à jour la citation
-                quotes.push({ text: latestQuote.title, category: "Inspiration" });
-                showSyncNotification("Aucune modification nécessaire, les citations sont à jour.");
-            }
+        const inputText = document.createElement("input");
+        inputText.id = "newQuoteText";
+        inputText.type = "text";
+        inputText.placeholder = "Entrez une nouvelle citation";
 
-            saveQuotes(); // Sauvegarder les citations mises à jour
-            showRandomQuote(); // Afficher une citation mise à jour
-        } catch (error) {
-            console.error('Erreur lors de la synchronisation des citations :', error);
+        const inputCategory = document.createElement("input");
+        inputCategory.id = "newQuoteCategory";
+        inputCategory.type = "text";
+        inputCategory.placeholder = "Entrez la catégorie de la citation";
+
+        const addButton = document.createElement("button");
+        addButton.textContent = "Ajouter la citation";
+        addButton.addEventListener("click", addQuote);
+
+        formContainer.appendChild(inputText);
+        formContainer.appendChild(inputCategory);
+        formContainer.appendChild(addButton);
+
+        document.body.appendChild(formContainer);
+    }
+
+    // Fonction pour ajouter une citation
+    function addQuote() {
+        const quoteText = document.getElementById("newQuoteText").value.trim();
+        const quoteCategory = document.getElementById("newQuoteCategory").value.trim();
+
+        if (quoteText === "" || quoteCategory === "") {
+            alert("Veuillez entrer une citation et une catégorie.");
+            return;
         }
+
+        quotes.push({ text: quoteText, category: quoteCategory });
+        saveQuotes();
+        showRandomQuote(); // Afficher la nouvelle citation après ajout
+        document.getElementById("newQuoteText").value = "";
+        document.getElementById("newQuoteCategory").value = "";
+    }
+
+    // Charger les catégories et les citations depuis localStorage
+    function loadLastSelectedCategory() {
+        const lastCategory = localStorage.getItem("selectedCategory");
+        if (lastCategory) {
+            categoryFilter.value = lastCategory;
+            filterQuotes();
+        }
+    }
+
+    // Ajouter l'événement d'exportation
+    exportQuotesButton.addEventListener("click", exportQuotes);
+
+    // Afficher le formulaire d'ajout de citation quand le bouton est cliqué
+    addQuoteButton.addEventListener("click", createAddQuoteForm);
+
+    // Fonction pour synchroniser les citations avec le serveur
+    function syncQuotes() {
+        fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: "Nouvelle citation",
+                body: "Ceci est une citation inspirante.",
+                userId: 1
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const newQuotes = [{
+                text: data.title,
+                category: "Inspiration"
+            }];
+            
+            quotes.push(...newQuotes);
+            saveQuotes();
+            showSyncNotification("Les citations ont été mises à jour avec succès depuis le serveur!");
+        })
+        .catch(error => console.error('Erreur lors de la synchronisation :', error));
     }
 
     // Afficher une notification après la synchronisation
@@ -94,10 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Synchroniser les citations toutes les 10 secondes
-    setInterval(syncQuotes, 10000); // Vérifier les mises à jour toutes les 10 secondes
+    setInterval(syncQuotes, 10000);
 
     // Initialisation de l'application
     populateCategories();
+    loadLastSelectedCategory();
     showRandomQuote(); // Affiche une citation aléatoire dès le début
 });
 
