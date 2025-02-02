@@ -23,9 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Fonction pour afficher les citations
     function showQuotes(filteredQuotes) {
         quoteDisplay.innerHTML = "";
-        filteredQuotes.forEach(quote => {
-            quoteDisplay.innerHTML += `<p><strong>${quote.category}:</strong> ${quote.text}</p>`;
-        });
+        
+        // Utilisation de Math.random() pour sélectionner une citation aléatoire
+        const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+        const randomQuote = filteredQuotes[randomIndex];
+        
+        quoteDisplay.innerHTML = `<p><strong>${randomQuote.category}:</strong> ${randomQuote.text}</p>`;
     }
 
     // Filtrer les citations par catégorie
@@ -85,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadLastSelectedCategory();
     filterQuotes();
 });
+
 
 
 
