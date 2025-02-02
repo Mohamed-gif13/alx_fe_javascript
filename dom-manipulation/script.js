@@ -126,37 +126,34 @@ document.addEventListener("DOMContentLoaded", () => {
     // Afficher le formulaire d'ajout de citation quand le bouton est cliqué
     addQuoteButton.addEventListener("click", createAddQuoteForm);
 
-    // Synchroniser les citations avec le serveur et résoudre les conflits
+    // Fonction pour synchroniser les citations avec le serveur
     function syncQuotes() {
-        // Simulation de l'envoi des citations au serveur
         fetch('https://jsonplaceholder.typicode.com/posts', {
-            method: 'POST', 
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 title: "Nouvelle citation",
                 body: "Ceci est une citation inspirante.",
-                userId: 1 
+                userId: 1
             })
         })
         .then(response => response.json())
         .then(data => {
-            // Traiter la réponse et synchroniser les données
             const newQuotes = [{
                 text: data.title,
                 category: "Inspiration"
             }];
             
-            // Fusionner les citations locales avec celles du serveur
             quotes.push(...newQuotes);
             saveQuotes();
-            showSyncNotification("Les citations ont été mises à jour depuis le serveur !");
+            showSyncNotification("Les citations ont été mises à jour avec succès depuis le serveur!");
         })
         .catch(error => console.error('Erreur lors de la synchronisation :', error));
     }
 
-    // Afficher une notification après synchronisation
+    // Afficher une notification après la synchronisation
     function showSyncNotification(message) {
         const notification = document.createElement('div');
         notification.textContent = message;
@@ -174,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 5000);
     }
 
-    // Lancer la synchronisation toutes les 10 secondes
+    // Synchroniser les citations toutes les 10 secondes
     setInterval(syncQuotes, 10000);
 
     // Initialisation de l'application
@@ -182,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadLastSelectedCategory();
     showRandomQuote(); // Affiche une citation aléatoire dès le début
 });
+
 
 
 
