@@ -126,34 +126,50 @@ document.addEventListener("DOMContentLoaded", () => {
     // Afficher le formulaire d'ajout de citation quand le bouton est cliqué
     addQuoteButton.addEventListener("click", createAddQuoteForm);
 
-    // Fonction pour synchroniser les citations avec le serveur
-    function syncQuotes() {
-        fetch('https://jsonplaceholder.typicode.com/posts', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                title: "Nouvelle citation",
-                body: "Ceci est une citation inspirante.",
-                userId: 1
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            const newQuotes = [{
-                text: data.title,
-                category: "Inspiration"
-            }];
-            
-            quotes.push(...newQuotes);
-            saveQuotes();
-            showSyncNotification("Les citations ont été mises à jour avec succès depuis le serveur!");
-        })
-        .catch(error => console.error('Erreur lors de la synchronisation :', error));
+    // Fonction pour récupérer les citations du serveur
+    async function fetchQuotesFromServer() {
+        try {
+            const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+            const data = await response.json();
+            // Simuler des citations à partir des données du serveur
+            return data.map(post => ({
+                text: post.title,
+                category: "Server"
+            }));
+        } catch (error) {
+            console.error('Erreur lors de la récupération des citations du serveur :', error);
+            return [];
+        }
     }
 
-    // Afficher une notification après la synchronisation
+    // Fonction pour fusionner les citations locales et serveur
+    function mergeQuotes(localQuotes, serverQuotes) {
+        const mergedQuotes = [...localQuotes];
+        serverQuotes.forEach(serverQuote => {
+            // Vérifier si la citation existe déjà localement
+            const isDuplicate = localQuotes.some(localQuote => localQuote.text === serverQuote.text);
+            if (!isDuplicate) {
+                mergedQuotes.push(serverQuote);
+            }
+        });
+        return mergedQuotes;
+    }
+
+    // Fonction pour synchroniser les citations avec le serveur
+    async function syncQuotes() {
+        const serverQuotes = await fetchQuotesFromServer();
+        const mergedQuotes = mergeQuotes(quotes, serverQuotes);
+
+        // Mettre à jour les citations locales si des changements sont détectés
+        if (mergedQuotes.length !== quotes.length) {
+            quotes = mergedQuotes;
+            saveQuotes();
+            showSyncNotification("Les citations ont été mises à jour avec succès depuis le serveur!");
+            showRandomQuote(); // Rafraîchir l'affichage
+        }
+    }
+
+    // Fonction pour afficher une notification
     function showSyncNotification(message) {
         const notification = document.createElement('div');
         notification.textContent = message;
