@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Fonction pour peupler dynamiquement les catégories
     function populateCategories() {
-        const categories = new Set(quotes.map(quote => quote.category)); // Utilisation de map pour extraire les catégories uniques
+        const categories = new Set(quotes.map(quote => quote.category));
         categories.forEach(category => {
             const option = document.createElement("option");
             option.value = category;
@@ -30,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
             filteredQuotes = quotes.filter(quote => quote.category === selectedCategory);
         }
 
-        // Utilisation de Math.random() pour sélectionner une citation aléatoire
         const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
         const randomQuote = filteredQuotes[randomIndex];
 
@@ -39,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Filtrer les citations par catégorie
     function filterQuotes() {
-        showRandomQuote(); // Met à jour l'affichage des citations en fonction du filtre
+        showRandomQuote();
         localStorage.setItem("selectedCategory", categoryFilter.value);
     }
 
@@ -127,46 +126,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // Afficher le formulaire d'ajout de citation quand le bouton est cliqué
     addQuoteButton.addEventListener("click", createAddQuoteForm);
 
-    // Fonction asynchrone pour récupérer les citations depuis le serveur
-    async function fetchQuotesFromServer() {
-        try {
-            const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-                method: 'POST', // Méthode POST
-                headers: {
-                    'Content-Type': 'application/json', // En-tête pour spécifier que les données envoyées sont en JSON
-                },
-                body: JSON.stringify({
-                    title: "Nouvelle citation",
-                    body: "Ceci est une citation inspirante.",
-                    userId: 1 // Exemple de données envoyées dans le corps de la requête
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Erreur lors de l\'envoi des données');
-            }
-
-            const data = await response.json();
-
-            // Simuler des citations depuis le serveur
-            const serverQuotes = [{
-                text: data.title, // Utilisation de "title" comme texte de citation
+    // Synchroniser les citations avec le serveur et résoudre les conflits
+    function syncQuotes() {
+        // Simulation de l'envoi des citations au serveur
+        fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: "Nouvelle citation",
+                body: "Ceci est une citation inspirante.",
+                userId: 1 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Traiter la réponse et synchroniser les données
+            const newQuotes = [{
+                text: data.title,
                 category: "Inspiration"
             }];
-
-            // Ajouter les citations du serveur à la liste
-            quotes.push(...serverQuotes);
-            saveQuotes(); // Sauvegarder les nouvelles citations dans le Local Storage
-            showSyncNotification("Les citations ont été mises à jour avec succès depuis le serveur!");
-        } catch (error) {
-            console.error('Erreur lors de la récupération des citations :', error);
-        }
+            
+            // Fusionner les citations locales avec celles du serveur
+            quotes.push(...newQuotes);
+            saveQuotes();
+            showSyncNotification("Les citations ont été mises à jour depuis le serveur !");
+        })
+        .catch(error => console.error('Erreur lors de la synchronisation :', error));
     }
 
-    // Synchroniser les citations avec le serveur toutes les 10 secondes
-    setInterval(fetchQuotesFromServer, 10000);
-
-    // Afficher une notification quand la synchronisation réussie
+    // Afficher une notification après synchronisation
     function showSyncNotification(message) {
         const notification = document.createElement('div');
         notification.textContent = message;
@@ -184,11 +174,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 5000);
     }
 
+    // Lancer la synchronisation toutes les 10 secondes
+    setInterval(syncQuotes, 10000);
+
     // Initialisation de l'application
     populateCategories();
     loadLastSelectedCategory();
     showRandomQuote(); // Affiche une citation aléatoire dès le début
 });
+
 
 
 
