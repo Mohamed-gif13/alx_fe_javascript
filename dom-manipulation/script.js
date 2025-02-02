@@ -20,19 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Fonction pour afficher les citations
-    function showQuotes(filteredQuotes) {
-        quoteDisplay.innerHTML = "";
-        
-        // Utilisation de Math.random() pour sélectionner une citation aléatoire
-        const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
-        const randomQuote = filteredQuotes[randomIndex];
-        
-        quoteDisplay.innerHTML = `<p><strong>${randomQuote.category}:</strong> ${randomQuote.text}</p>`;
-    }
-
-    // Filtrer les citations par catégorie
-    function filterQuotes() {
+    // Fonction pour afficher les citations aléatoires
+    function showRandomQuote() {
         const selectedCategory = categoryFilter.value;
         let filteredQuotes = quotes;
 
@@ -40,8 +29,17 @@ document.addEventListener("DOMContentLoaded", () => {
             filteredQuotes = quotes.filter(quote => quote.category === selectedCategory);
         }
 
-        showQuotes(filteredQuotes);
-        localStorage.setItem("selectedCategory", selectedCategory);
+        // Utilisation de Math.random() pour sélectionner une citation aléatoire
+        const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+        const randomQuote = filteredQuotes[randomIndex];
+
+        quoteDisplay.innerHTML = `<p><strong>${randomQuote.category}:</strong> ${randomQuote.text}</p>`;
+    }
+
+    // Filtrer les citations par catégorie
+    function filterQuotes() {
+        showRandomQuote(); // Met à jour l'affichage des citations en fonction du filtre
+        localStorage.setItem("selectedCategory", categoryFilter.value);
     }
 
     // Sauvegarder les citations dans localStorage
@@ -86,8 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialisation de l'application
     populateCategories();
     loadLastSelectedCategory();
-    filterQuotes();
+    showRandomQuote(); // Affiche une citation aléatoire dès le début
 });
+
 
 
 
