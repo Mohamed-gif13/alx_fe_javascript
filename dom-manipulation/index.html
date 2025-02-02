@@ -12,15 +12,21 @@
   <label for="categoryFilter">Filter by Category: </label>
   <select id="categoryFilter" onchange="filterQuotes()">
     <option value="all">All Categories</option>
-    <!-- Les catégories seront ajoutées dynamiquement ici -->
   </select>
 
   <div id="quoteDisplay"></div>
-
   <button id="newQuote">Show New Quote</button>
+
+  <!-- Export Quotes Button -->
+  <button id="exportQuotes">Export Quotes</button>
+
+  <!-- Import Quotes Button -->
+  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
 
   <script src="script.js"></script>
 </body>
 </html>
+
+
 
 
