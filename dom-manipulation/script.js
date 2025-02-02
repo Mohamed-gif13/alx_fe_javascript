@@ -127,11 +127,32 @@ document.addEventListener("DOMContentLoaded", () => {
     // Afficher le formulaire d'ajout de citation quand le bouton est cliqué
     addQuoteButton.addEventListener("click", createAddQuoteForm);
 
+    // Fonction pour récupérer les citations depuis le serveur
+    function fetchQuotesFromServer() {
+        fetch('https://jsonplaceholder.typicode.com/posts') // API fictive
+            .then(response => response.json())
+            .then(data => {
+                const serverQuotes = data.slice(0, 5).map(item => ({
+                    text: item.title,  // Utilisation de "title" comme texte de citation (à ajuster selon ton API)
+                    category: "Inspiration"  // Catégorie fixe ou autre logique selon l'API
+                }));
+                
+                quotes.push(...serverQuotes);
+                saveQuotes(); // Sauvegarder les nouvelles citations dans le Local Storage
+                console.log("Citations mises à jour depuis le serveur !");
+            })
+            .catch(error => console.error('Erreur lors de la récupération des citations :', error));
+    }
+
+    // Synchroniser les citations avec le serveur toutes les 10 secondes
+    setInterval(fetchQuotesFromServer, 10000);
+
     // Initialisation de l'application
     populateCategories();
     loadLastSelectedCategory();
     showRandomQuote(); // Affiche une citation aléatoire dès le début
 });
+
 
 
 
