@@ -130,13 +130,29 @@ document.addEventListener("DOMContentLoaded", () => {
     // Fonction asynchrone pour récupérer les citations depuis le serveur
     async function fetchQuotesFromServer() {
         try {
-            const response = await fetch('https://jsonplaceholder.typicode.com/posts'); // API fictive
+            const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+                method: 'POST', // Méthode POST
+                headers: {
+                    'Content-Type': 'application/json', // En-tête pour spécifier que les données envoyées sont en JSON
+                },
+                body: JSON.stringify({
+                    title: "Nouvelle citation",
+                    body: "Ceci est une citation inspirante.",
+                    userId: 1 // Exemple de données envoyées dans le corps de la requête
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de l\'envoi des données');
+            }
+
             const data = await response.json();
 
-            const serverQuotes = data.slice(0, 5).map(item => ({
-                text: item.title,  // Utilisation de "title" comme texte de citation (à ajuster selon ton API)
-                category: "Inspiration"  // Catégorie fixe ou autre logique selon l'API
-            }));
+            // Traiter la réponse du serveur, ici je simule une réponse qui contient des citations
+            const serverQuotes = [{
+                text: data.title, // Utilisation de "title" comme texte de citation
+                category: "Inspiration"
+            }];
 
             quotes.push(...serverQuotes);
             saveQuotes(); // Sauvegarder les nouvelles citations dans le Local Storage
@@ -154,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadLastSelectedCategory();
     showRandomQuote(); // Affiche une citation aléatoire dès le début
 });
+
 
 
 
