@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const quoteDisplay = document.getElementById("quoteDisplay");
     const categoryFilter = document.getElementById("categoryFilter");
     const exportQuotesButton = document.getElementById("exportQuotes");
+    const addQuoteButton = document.getElementById("addQuoteButton");
 
     // Fonction pour peupler dynamiquement les catégories
     function populateCategories() {
@@ -69,6 +70,48 @@ document.addEventListener("DOMContentLoaded", () => {
         fileReader.readAsText(event.target.files[0]);
     }
 
+    // Ajouter un formulaire pour ajouter une citation
+    function createAddQuoteForm() {
+        const formContainer = document.createElement("div");
+
+        const inputText = document.createElement("input");
+        inputText.id = "newQuoteText";
+        inputText.type = "text";
+        inputText.placeholder = "Entrez une nouvelle citation";
+
+        const inputCategory = document.createElement("input");
+        inputCategory.id = "newQuoteCategory";
+        inputCategory.type = "text";
+        inputCategory.placeholder = "Entrez la catégorie de la citation";
+
+        const addButton = document.createElement("button");
+        addButton.textContent = "Ajouter la citation";
+        addButton.addEventListener("click", addQuote);
+
+        formContainer.appendChild(inputText);
+        formContainer.appendChild(inputCategory);
+        formContainer.appendChild(addButton);
+
+        document.body.appendChild(formContainer);
+    }
+
+    // Fonction pour ajouter une citation
+    function addQuote() {
+        const quoteText = document.getElementById("newQuoteText").value.trim();
+        const quoteCategory = document.getElementById("newQuoteCategory").value.trim();
+
+        if (quoteText === "" || quoteCategory === "") {
+            alert("Veuillez entrer une citation et une catégorie.");
+            return;
+        }
+
+        quotes.push({ text: quoteText, category: quoteCategory });
+        saveQuotes();
+        showRandomQuote(); // Afficher la nouvelle citation après ajout
+        document.getElementById("newQuoteText").value = "";
+        document.getElementById("newQuoteCategory").value = "";
+    }
+
     // Charger les catégories et les citations depuis localStorage
     function loadLastSelectedCategory() {
         const lastCategory = localStorage.getItem("selectedCategory");
@@ -81,11 +124,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Ajouter l'événement d'exportation
     exportQuotesButton.addEventListener("click", exportQuotes);
 
+    // Afficher le formulaire d'ajout de citation quand le bouton est cliqué
+    addQuoteButton.addEventListener("click", createAddQuoteForm);
+
     // Initialisation de l'application
     populateCategories();
     loadLastSelectedCategory();
     showRandomQuote(); // Affiche une citation aléatoire dès le début
 });
+
+
+
 
 
 
